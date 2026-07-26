@@ -1,19 +1,29 @@
 import { supabase } from '../../../lib/supabase'
 import { notFound, redirect } from 'next/navigation'
 
-export default async function EventoPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function EventoPage({ 
+  params, 
+  searchParams 
+}: { 
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ admin?: string }>
+}) {
   const { slug } = await params
+  const { admin } = await searchParams
 
   const { data: event } = await supabase.from('events').select('*').eq('slug', slug).single()
   if (!event) notFound()
 
   const { data: categories } = await supabase.from('categories').select('*').eq('event_id', event.id)
 
+  const esAdmin = admin === event.admin_password
+
   async function cambiarEstado() {
     'use server'
+    if (!esAdmin) return
     const nuevoEstado = event.status === 'draft' ? 'live' : event.status === 'live' ? 'finished' : 'draft'
     await supabase.from('events').update({ status: nuevoEstado }).eq('id', event.id)
-    redirect(`/evento/${slug}`)
+    redirect(`/evento/${slug}?admin=${admin}`)
   }
 
   const estadoLabel: Record<string, string> = {
@@ -27,8 +37,6 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
     live: 'bg-green-100 text-green-700',
     finished: 'bg-gray-100 text-gray-600'
   }
-
-  const botonLabel = event.status === 'draft' ? 'Iniciar competencia' : event.status === 'live' ? 'Finalizar competencia' : 'Reiniciar'
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">
@@ -46,17 +54,19 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
           <p className="text-sm text-gray-500 mb-4">Fecha: {new Date(event.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           <p className="text-xs text-gray-400">Maximo {event.max_athletes} atletas</p>
 
-          <form action={cambiarEstado} className="mt-4">
-            <button type="submit" className={`w-full py-2.5 rounded-lg text-sm font-medium ${
-              event.status === 'draft' 
-                ? 'bg-green-600 text-white hover:bg-green-700' 
-                : event.status === 'live'
-                ? 'bg-red-600 text-white hover:bg-red-700'
-                : 'bg-gray-600 text-white hover:bg-gray-700'
-            }`}>
-              {botonLabel}
-            </button>
-          </form>
+          {esAdmin && (
+            <form action={cambiarEstado} className="mt-4">
+              <button type="submit" className={`w-full py-2.5 rounded-lg text-sm font-medium ${
+                event.status === 'draft' 
+                  ? 'bg-green-600 text-white hover:bg-green-700' 
+                  : event.status === 'live'
+                  ? 'bg-red-600 text-white hover:bg-red-700'
+                  : 'bg-gray-600 text-white hover:bg-gray-700'
+              }`}>
+                {event.status === 'draft' ? 'Iniciar competencia' : event.status === 'live' ? 'Finalizar competencia' : 'Reiniciar'}
+              </button>
+            </form>
+          )}
         </div>
 
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Categorias</h2>
@@ -75,19 +85,42 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
         )}
 
         <div className="mt-6 grid grid-cols-2 gap-3">
-          <a href={`/evento/${slug}/atletas`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
-            Atletas
-          </a>
-          <a href={`/evento/${slug}/wods`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
-            WODs
-          </a>
-          <a href={`/evento/${slug}/juez`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
-            Modo Juez
-          </a>
-          <a href={`/evento/${slug}/leaderboard`} className="bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 text-center">
-            Leaderboard
-          </a>
+          {esAdmin ? (
+            <>
+              <a href={`/evento/${slug}/atletas?admin=${admin}`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
+                Atletas
+              </a>
+              <a href={`/evento/${slug}/wods?admin=${admin}`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
+                WODs
+              </a>
+              <a href={`/evento/${slug}/juez`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
+                Modo Juez
+              </a>
+              <a href={`/evento/${slug}/leaderboard`} className="bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 text-center">
+                Leaderboard
+              </a>
+            </>
+          ) : (
+            <>
+<a href={`/evento/${slug}/leaderboard`} className="bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 text-center">
+  Leaderboard
+</a>
+<a href={`/evento/${slug}/display`} target="_blank" className="col-span-2 bg-purple-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-purple-700 text-center">
+  Abrir Display para TV
+</a>
+            </>
+          )}
         </div>
+
+        {!esAdmin && (
+          <div className="mt-6 bg-white rounded-xl p-4 border border-gray-100">
+            <p className="text-xs text-gray-500 mb-2">Acceso de administrador</p>
+            <form action={`/evento/${slug}`} method="GET" className="flex gap-2">
+              <input type="password" name="admin" placeholder="Contraseña" className="flex-1 px-3 py-2 border rounded-lg text-sm" />
+              <button type="submit" className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium">Entrar</button>
+            </form>
+          </div>
+        )}
       </div>
     </main>
   )
