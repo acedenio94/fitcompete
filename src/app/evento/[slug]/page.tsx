@@ -5,7 +5,7 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
   const { slug } = await params
 
   const { data: event } = await supabase.from('events').select('*').eq('slug', slug).single()
-  if (!event) { notFound() }
+  if (!event) notFound()
 
   const { data: categories } = await supabase.from('categories').select('*').eq('event_id', event.id)
 
@@ -41,17 +41,20 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
           <p className="text-gray-400 text-sm">No hay categorias registradas.</p>
         )}
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <a href={`/evento/${slug}/atletas`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
-            Atletas
-          </a>
-          <a href={`/evento/${slug}/wods`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
-            WODs
-          </a>
-          <button className="col-span-2 bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800">
-            Leaderboard
-          </button>
-        </div>
+<div className="mt-6 grid grid-cols-2 gap-3">
+  <a href={`/evento/${slug}/atletas`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
+    Atletas
+  </a>
+  <a href={`/evento/${slug}/wods`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
+    WODs
+  </a>
+  <a href={`/evento/${slug}/juez`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
+    Modo Juez
+  </a>
+  <a href={`/evento/${slug}/leaderboard`} className="bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 text-center">
+    Leaderboard
+  </a>
+</div>
       </div>
     </main>
   )
