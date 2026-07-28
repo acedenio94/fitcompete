@@ -1,5 +1,7 @@
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '../../../../lib/supabase'
 import { notFound, redirect } from 'next/navigation'
+import Link from 'next/link'
+import DeleteButton from '@/components/DeleteButton'
 
 export default async function AtletasPage({ 
   params, 
@@ -19,7 +21,7 @@ export default async function AtletasPage({
       <main className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-md mx-auto text-center">
           <p className="text-red-500 mb-4">Acceso denegado. Se requiere contraseña de administrador.</p>
-          <a href={`/evento/${slug}`} className="text-sm text-gray-500 hover:text-gray-900">Volver al evento</a>
+          <Link href={`/evento/${slug}`} className="text-sm text-gray-500 hover:text-gray-900">Volver al evento</Link>
         </div>
       </main>
     )
@@ -32,7 +34,6 @@ export default async function AtletasPage({
     .eq('event_id', event.id)
     .order('bib_number')
 
-  // Si hay un atleta para editar, cargarlo
   let atletaEditar = null
   if (editar) {
     const { data } = await supabase.from('athletes').select('*').eq('id', parseInt(editar)).single()
@@ -48,8 +49,11 @@ export default async function AtletasPage({
     const affiliate = formData.get('affiliate') as string
     const atletaId = formData.get('atleta_id') as string
 
+    if (isNaN(bib_number)) {
+      throw new Error('El dorsal debe ser un número válido')
+    }
+
     if (atletaId) {
-      // Editar existente
       await supabase.from('athletes').update({
         full_name,
         category_id,
@@ -58,7 +62,6 @@ export default async function AtletasPage({
         affiliate: affiliate || null
       }).eq('id', parseInt(atletaId))
     } else {
-      // Crear nuevo
       await supabase.from('athletes').insert({
         event_id: event.id,
         category_id,
@@ -82,11 +85,10 @@ export default async function AtletasPage({
   return (
     <main className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-md mx-auto">
-        <a href={`/evento/${slug}?admin=${admin}`} className="text-sm text-gray-500 hover:text-gray-900 mb-4 block">Volver al evento</a>
+        <Link href={`/evento/${slug}?admin=${admin}`} className="text-sm text-gray-500 hover:text-gray-900 mb-4 block">Volver al evento</Link>
         <h1 className="text-xl font-bold text-gray-900 mb-1">Atletas</h1>
         <p className="text-sm text-gray-500 mb-6">{event.name}</p>
 
-        {/* Formulario: Crear o Editar */}
         <form action={registrarAtleta} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 mb-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">
             {atletaEditar ? 'Editar atleta' : 'Registrar atleta'}
@@ -139,13 +141,12 @@ export default async function AtletasPage({
           </button>
           
           {atletaEditar && (
-            <a href={`/evento/${slug}/atletas?admin=${admin}`} className="block text-center text-sm text-gray-500 mt-2 hover:text-gray-900">
+            <Link href={`/evento/${slug}/atletas?admin=${admin}`} className="block text-center text-sm text-gray-500 mt-2 hover:text-gray-900">
               Cancelar edicion
-            </a>
+            </Link>
           )}
         </form>
 
-        {/* Lista de atletas */}
         <h2 className="text-sm font-semibold text-gray-900 mb-3">Atletas registrados ({athletes?.length || 0}/{event.max_athletes})</h2>
         
         {athletes && athletes.length > 0 ? (
@@ -160,21 +161,15 @@ export default async function AtletasPage({
                   <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">Activo</span>
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <a 
+                  <Link 
                     href={`/evento/${slug}/atletas?admin=${admin}&editar=${a.id}`}
                     className="flex-1 text-center py-2 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
                   >
                     Editar
-                  </a>
+                  </Link>
                   <form action={eliminarAtleta} className="flex-1">
                     <input type="hidden" name="atleta_id" value={a.id} />
-                    <button 
-                      type="submit" 
-                      className="w-full py-2 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100"
-                      onClick="return confirm('¿Eliminar este atleta?')"
-                    >
-                      Eliminar
-                    </button>
+                    <DeleteButton className="w-full py-2 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100" />
                   </form>
                 </div>
               </div>
