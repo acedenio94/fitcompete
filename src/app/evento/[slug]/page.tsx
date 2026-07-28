@@ -26,6 +26,23 @@ export default async function EventoPage({
     redirect(`/evento/${slug}?admin=${admin}`)
   }
 
+  async function crearCategoria(formData: FormData) {
+    'use server'
+    if (!esAdmin) return
+    const name = formData.get('name') as string
+    const gender = formData.get('gender') as string
+    const division = formData.get('division') as string
+
+    await supabase.from('categories').insert({
+      event_id: event.id,
+      name,
+      gender,
+      division
+    })
+
+    redirect(`/evento/${slug}?admin=${admin}`)
+  }
+
   const estadoLabel: Record<string, string> = {
     draft: 'Borrador',
     live: 'En vivo',
@@ -72,7 +89,7 @@ export default async function EventoPage({
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Categorias</h2>
         
         {categories && categories.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3 mb-6">
             {categories.map((cat) => (
               <div key={cat.id} className="bg-white rounded-xl p-4 border border-gray-100 flex justify-between items-center">
                 <span className="font-medium text-gray-900">{cat.name}</span>
@@ -81,10 +98,29 @@ export default async function EventoPage({
             ))}
           </div>
         ) : (
-          <p className="text-gray-400 text-sm">No hay categorias registradas.</p>
+          <p className="text-gray-400 text-sm mb-6">No hay categorias registradas.</p>
         )}
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
+        {esAdmin && (
+          <form action={crearCategoria} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 mb-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Agregar categoria</h3>
+            <input name="name" placeholder="Nombre (ej: RX Masculino)" required className="w-full mb-3 px-3 py-2 border rounded-lg text-sm" />
+            <select name="gender" required className="w-full mb-3 px-3 py-2 border rounded-lg text-sm bg-white">
+              <option value="">Genero</option>
+              <option value="male">Masculino</option>
+              <option value="female">Femenino</option>
+            </select>
+            <select name="division" required className="w-full mb-4 px-3 py-2 border rounded-lg text-sm bg-white">
+              <option value="">Division</option>
+              <option value="rx">RX</option>
+              <option value="scaled">Scaled</option>
+              <option value="masters">Masters</option>
+            </select>
+            <button type="submit" className="w-full bg-black text-white py-2.5 rounded-lg text-sm font-medium">+ Agregar categoria</button>
+          </form>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
           {esAdmin ? (
             <>
               <a href={`/evento/${slug}/atletas?admin=${admin}`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
@@ -99,15 +135,15 @@ export default async function EventoPage({
               <a href={`/evento/${slug}/leaderboard`} className="bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 text-center">
                 Leaderboard
               </a>
+              <a href={`/evento/${slug}/display`} target="_blank" className="col-span-2 bg-purple-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-purple-700 text-center">
+                Abrir Display para TV
+              </a>
             </>
           ) : (
             <>
-<a href={`/evento/${slug}/leaderboard`} className="bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 text-center">
-  Leaderboard
-</a>
-<a href={`/evento/${slug}/display`} target="_blank" className="col-span-2 bg-purple-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-purple-700 text-center">
-  Abrir Display para TV
-</a>
+              <a href={`/evento/${slug}/leaderboard`} className="col-span-2 bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 text-center">
+                Ver Leaderboard
+              </a>
             </>
           )}
         </div>
