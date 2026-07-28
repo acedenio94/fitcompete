@@ -129,7 +129,8 @@ export default async function EventoPage({
           </form>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
+        {/* Botones de navegacion - Visibles para todos */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
           {esAdmin ? (
             <>
               <a href={`/evento/${slug}/atletas?admin=${admin}`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
@@ -138,27 +139,27 @@ export default async function EventoPage({
               <a href={`/evento/${slug}/wods?admin=${admin}`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
                 WODs
               </a>
-              <a href={`/evento/${slug}/juez`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
-                Modo Juez
-              </a>
-              <a href={`/evento/${slug}/leaderboard`} className="bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 text-center">
-                Leaderboard
-              </a>
-              <a href={`/evento/${slug}/display`} target="_blank" className="col-span-2 bg-purple-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-purple-700 text-center">
-                Abrir Display para TV
-              </a>
             </>
-          ) : (
-            <>
-              <a href={`/evento/${slug}/leaderboard`} className="col-span-2 bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 text-center">
-                Ver Leaderboard
-              </a>
-            </>
+          ) : null}
+          
+          <a href={`/evento/${slug}/leaderboard`} className={`bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 text-center ${!esAdmin ? 'col-span-2' : ''}`}>
+            Ver Leaderboard
+          </a>
+          
+          {esAdmin && (
+            <a href={`/evento/${slug}/juez`} className="bg-white text-gray-900 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-center">
+              Modo Juez
+            </a>
           )}
         </div>
 
+        {/* Display para TV - Visible para todos */}
+        <a href={`/evento/${slug}/display`} target="_blank" className="block w-full bg-purple-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-purple-700 text-center mb-4">
+          📺 Abrir Display para TV
+        </a>
+
         {!esAdmin && (
-          <div className="mt-6 bg-white rounded-xl p-4 border border-gray-100">
+          <div className="mt-4 bg-white rounded-xl p-4 border border-gray-100">
             <p className="text-xs text-gray-500 mb-2">Acceso de administrador</p>
             <form action={`/evento/${slug}`} method="GET" className="flex gap-2">
               <input type="password" name="admin" placeholder="Contraseña" className="flex-1 px-3 py-2 border rounded-lg text-sm" />
