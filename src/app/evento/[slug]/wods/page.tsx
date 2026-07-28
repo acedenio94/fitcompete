@@ -1,4 +1,4 @@
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '../../../../lib/supabase'
 import { notFound, redirect } from 'next/navigation'
 
 export default async function WodsPage({ 
