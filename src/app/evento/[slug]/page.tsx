@@ -60,30 +60,39 @@ export default async function EventoPage({
       <div className="max-w-md mx-auto">
         <a href="/" className="text-sm text-gray-500 hover:text-gray-900 mb-4 block">Volver</a>
         
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-          <div className="flex justify-between items-start mb-3">
-            <h1 className="text-xl font-bold text-gray-900">{event.name}</h1>
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${estadoColor[event.status]}`}>
-              {estadoLabel[event.status]}
-            </span>
-          </div>
-          <p className="text-sm text-gray-500 mb-1">Ubicacion: {event.location}</p>
-          <p className="text-sm text-gray-500 mb-4">Fecha: {new Date(event.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-          <p className="text-xs text-gray-400">Maximo {event.max_athletes} atletas</p>
-
-          {esAdmin && (
-            <form action={cambiarEstado} className="mt-4">
-              <button type="submit" className={`w-full py-2.5 rounded-lg text-sm font-medium ${
-                event.status === 'draft' 
-                  ? 'bg-green-600 text-white hover:bg-green-700' 
-                  : event.status === 'live'
-                  ? 'bg-red-600 text-white hover:bg-red-700'
-                  : 'bg-gray-600 text-white hover:bg-gray-700'
-              }`}>
-                {event.status === 'draft' ? 'Iniciar competencia' : event.status === 'live' ? 'Finalizar competencia' : 'Reiniciar'}
-              </button>
-            </form>
+        <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 mb-6">
+          {event.image_url && (
+            <img 
+              src={event.image_url} 
+              alt={event.name} 
+              className="w-full h-48 object-cover"
+            />
           )}
+          <div className="p-6">
+            <div className="flex justify-between items-start mb-3">
+              <h1 className="text-xl font-bold text-gray-900">{event.name}</h1>
+              <span className={`text-xs px-2 py-1 rounded-full font-medium ${estadoColor[event.status]}`}>
+                {estadoLabel[event.status]}
+              </span>
+            </div>
+            <p className="text-sm text-gray-500 mb-1">Ubicacion: {event.location}</p>
+            <p className="text-sm text-gray-500 mb-4">Fecha: {new Date(event.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p className="text-xs text-gray-400">Maximo {event.max_athletes} atletas</p>
+
+            {esAdmin && (
+              <form action={cambiarEstado} className="mt-4">
+                <button type="submit" className={`w-full py-2.5 rounded-lg text-sm font-medium ${
+                  event.status === 'draft' 
+                    ? 'bg-green-600 text-white hover:bg-green-700' 
+                    : event.status === 'live'
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-gray-600 text-white hover:bg-gray-700'
+                }`}>
+                  {event.status === 'draft' ? 'Iniciar competencia' : event.status === 'live' ? 'Finalizar competencia' : 'Reiniciar'}
+                </button>
+              </form>
+            )}
+          </div>
         </div>
 
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Categorias</h2>

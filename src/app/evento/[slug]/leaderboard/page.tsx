@@ -4,6 +4,28 @@ import { useState, useEffect } from 'react'
 import { use } from 'react'
 import { supabase } from '../../../../lib/supabase'
 
+function Avatar({ url, name, size = 40 }: { url?: string; name: string; size?: number }) {
+  if (url) {
+    return (
+      <img 
+        src={url} 
+        alt={name} 
+        className="rounded-full object-cover border border-gray-200"
+        style={{ width: size, height: size }}
+      />
+    )
+  }
+  const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+  return (
+    <div 
+      className="rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold border border-gray-200"
+      style={{ width: size, height: size, fontSize: size * 0.35 }}
+    >
+      {initials}
+    </div>
+  )
+}
+
 export default function LeaderboardPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
   const [event, setEvent] = useState<any>(null)
@@ -128,7 +150,6 @@ export default function LeaderboardPage({ params }: { params: Promise<{ slug: st
         <h1 className="text-xl font-bold text-gray-900 mb-1">Leaderboard</h1>
         <p className="text-sm text-gray-500 mb-6">{event.name}</p>
 
-        {/* Dropdown de categorias */}
         <div className="mb-6">
           <label className="text-sm font-medium text-gray-700 mb-2 block">Seleccionar categoria</label>
           <select 
@@ -147,22 +168,34 @@ export default function LeaderboardPage({ params }: { params: Promise<{ slug: st
           <>
             <h2 className="text-lg font-bold text-gray-900 mb-4">{selectedCatName}</h2>
 
-            {/* Podio */}
+            {/* Podio con fotos */}
             {currentAthletes.length >= 3 && (
               <div className="flex justify-center items-end gap-4 mb-6">
                 <div className="text-center pb-2">
-                  <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-600 mb-2">2</div>
+                  <div className="relative mx-auto mb-2">
+                    <Avatar url={currentAthletes[1]?.athlete.photo_url} name={currentAthletes[1]?.athlete.full_name} size={64} />
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-gray-700 border-2 border-white">2</div>
+                  </div>
                   <p className="text-xs font-medium">{currentAthletes[1]?.athlete.full_name}</p>
+                  <p className="text-xs text-gray-400">{currentAthletes[1]?.athlete.affiliate || 'Sin box'}</p>
                   <p className="text-xs text-gray-400">{currentAthletes[1]?.totalPoints} pts</p>
                 </div>
                 <div className="text-center pb-4">
-                  <div className="w-20 h-20 rounded-full bg-yellow-100 border-2 border-yellow-400 flex items-center justify-center text-xl font-bold text-yellow-700 mb-2">1</div>
+                  <div className="relative mx-auto mb-2">
+                    <Avatar url={currentAthletes[0]?.athlete.photo_url} name={currentAthletes[0]?.athlete.full_name} size={80} />
+                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-yellow-400 flex items-center justify-center text-sm font-bold text-yellow-900 border-2 border-white">1</div>
+                  </div>
                   <p className="text-sm font-medium">{currentAthletes[0]?.athlete.full_name}</p>
+                  <p className="text-xs text-gray-400">{currentAthletes[0]?.athlete.affiliate || 'Sin box'}</p>
                   <p className="text-xs text-gray-400">{currentAthletes[0]?.totalPoints} pts</p>
                 </div>
                 <div className="text-center pb-1">
-                  <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center text-lg font-bold text-orange-700 mb-2">3</div>
+                  <div className="relative mx-auto mb-2">
+                    <Avatar url={currentAthletes[2]?.athlete.photo_url} name={currentAthletes[2]?.athlete.full_name} size={64} />
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-orange-300 flex items-center justify-center text-xs font-bold text-orange-800 border-2 border-white">3</div>
+                  </div>
                   <p className="text-xs font-medium">{currentAthletes[2]?.athlete.full_name}</p>
+                  <p className="text-xs text-gray-400">{currentAthletes[2]?.athlete.affiliate || 'Sin box'}</p>
                   <p className="text-xs text-gray-400">{currentAthletes[2]?.totalPoints} pts</p>
                 </div>
               </div>
@@ -189,7 +222,13 @@ export default function LeaderboardPage({ params }: { params: Promise<{ slug: st
                     <tr key={entry.athlete.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
                       <td className="px-3 py-3 font-bold text-gray-900">{idx + 1}</td>
                       <td className="px-3 py-3">
-                        <div className="font-medium text-gray-900">#{entry.athlete.bib_number} {entry.athlete.full_name}</div>
+                        <div className="flex items-center gap-3">
+                          <Avatar url={entry.athlete.photo_url} name={entry.athlete.full_name} size={36} />
+                          <div>
+                            <div className="font-medium text-gray-900">#{entry.athlete.bib_number} {entry.athlete.full_name}</div>
+                            <div className="text-xs text-gray-400">{entry.athlete.affiliate || 'Sin box'}</div>
+                          </div>
+                        </div>
                       </td>
                       {workouts?.map(w => {
                         const s = entry.scores[w.id]
